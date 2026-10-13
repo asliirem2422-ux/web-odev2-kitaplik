@@ -1,0 +1,154 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.filtre-alani {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.arama-input, .kategori-select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #2a2a2a;
+  color: #fff;
+  font-size: 15px;
+}
+
+.arama-input {
+  flex: 1;
+}
+
+.ana-duzen {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .ana-duzen {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kitap-listesi {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.kitap-karti {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #242424;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid #333;
+}
+
+.kitap-karti h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+}
+
+.kitap-detay {
+  margin: 0;
+  font-size: 13px;
+  color: #aaa;
+}
+
+.kategori-rozet {
+  background-color: #3b82f6;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+.btn-favori {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.btn-favori.aktif {
+  background-color: #f59e0b;
+  color: #111;
+}
+
+.btn-favori.pasif {
+  background-color: #333;
+  color: #ddd;
+}
+
+.btn-favori:hover {
+  opacity: 0.9;
+}
+
+.favori-paneli {
+  background-color: #242424;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 18px;
+  height: fit-content;
+}
+
+.favori-paneli h2 {
+  margin-top: 0;
+  font-size: 18px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+}
+
+.favori-paneli ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.favori-eleman {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #2e2e2e;
+  font-size: 14px;
+}
+
+.btn-kaldir {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-kaldir:hover {
+  text-decoration: underline;
+}
