@@ -1,150 +1,62 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useParams,
+} from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, Yazi } from "./store";
 import "./App.css";
 
-// Kitap Veri Modeli
-interface Kitap {
-  id: number;
-  baslik: string;
-  yazar: string;
-  kategori: string;
-}
+// 1. Ana Sayfa (Yazı Listesi)
+function AnaSayfa() {
+  const [aramaMetni, setAramaMetni] = useState("");
+  const yazilar = useSelector((state: RootState) => state.data);
+  const isLoading = useSelector((state: RootState) => state.isLoading);
+  const isError = useSelector((state: RootState) => state.isError);
+  const dispatch = useDispatch();
 
-// 1. Sabit Kitap Dizisi (Slayt 68)
-const baslangicKitaplar: Kitap[] = [
-  { id: 1, baslik: "React'e Giriş", yazar: "D. Usta", kategori: "Web" },
-  { id: 2, baslik: "İleri JavaScript", yazar: "S. Kılıç", kategori: "Web" },
-  { id: 3, baslik: "Veri Yapıları", yazar: "A. Demir", kategori: "CS" },
-  { id: 4, baslik: "Algoritmalar", yazar: "E. Kaya", kategori: "CS" },
-  { id: 5, baslik: "UI/UX Temelleri", yazar: "N. Akın", kategori: "Tasarım" },
-];
+  const handleRemovePost = (yazi: Yazi) => {
+    dispatch({ type: "REMOVE_POST", payload: yazi });
+  };
 
-// 2. Arama Çubuğu Bileşeni (Kontrollü Bileşen)
-function AramaCubugu({
-  aramaMetni,
-  onArama,
-}: {
-  aramaMetni: string;
-  onArama: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}) {
-  return (
-    <input
-      type="text"
-      className="arama-input"
-      placeholder="Başlık veya yazar ara..."
-      value={aramaMetni}
-      onChange={onArama}
-    />
+  const arananYazilar = yazilar.filter((yazi) =>
+    yazi.baslik.toLowerCase().includes(aramaMetni.toLowerCase())
   );
-}
 
-// 3. Kategori Filtre Bileşeni (Kontrollü Select)
-function KategoriFiltre({
-  kategori,
-  onKategoriDegis,
-}: {
-  kategori: string;
-  onKategoriDegis: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-}) {
   return (
-    <select
-      className="kategori-select"
-      value={kategori}
-      onChange={onKategoriDegis}
-    >
-      <option value="Tümü">Tümü</option>
-      <option value="Web">Web</option>
-      <option value="CS">CS</option>
-      <option value="Tasarım">Tasarım</option>
-    </select>
-  );
-}
-
-// 4. Kitap Kartı Bileşeni (Destructuring kullanıldı)
-function KitapKarti({
-  id,
-  baslik,
-  yazar,
-  kategori,
-  favorideMi,
-  onFavoriToggle,
-}: Kitap & {
-  favorideMi: boolean;
-  onFavoriToggle: (id: number) => void;
-}) {
-  return (
-    <div className="kitap-karti">
+    <div>
+      <h2>Yazılar (Redux Store)</h2>
       <div>
-        <h3>{baslik}</h3>
-        <p className="kitap-detay">
-          {yazar} <span className="kategori-rozet">{kategori}</span>
-        </p>
-      </div>
-      <button
-        className={`btn-favori ${favorideMi ? "aktif" : "pasif"}`}
-        onClick={() => onFavoriToggle(id)}
-      >
-        {favorideMi ? "★ Favoride" : "☆ Favori Ekle"}
-      </button>
-    </div>
-  );
-}
-
-// 5. Kitap Listesi Bileşeni
-function KitapListe({
-  kitaplar,
-  favoriler,
-  onFavoriToggle,
-}: {
-  kitaplar: Kitap[];
-  favoriler: number[];
-  onFavoriToggle: (id: number) => void;
-}) {
-  if (kitaplar.length === 0) {
-    return <p style={{ color: "#888" }}>Eşleşen kitap bulunamadı.</p>;
-  }
-
-  return (
-    <div className="kitap-listesi">
-      {kitaplar.map((kitap) => (
-        <KitapKarti
-          key={kitap.id}
-          {...kitap}
-          favorideMi={favoriler.includes(kitap.id)}
-          onFavoriToggle={onFavoriToggle}
+        <label htmlFor="arama">Ara: </label>
+        <input
+          id="arama"
+          type="text"
+          value={aramaMetni}
+          onChange={(e) => setAramaMetni(e.target.value)}
         />
-      ))}
-    </div>
-  );
-}
+      </div>
+      <hr />
 
-// 6. Favori Paneli Bileşeni
-function FavoriPaneli({
-  tumKitaplar,
-  favoriler,
-  onFavoriCikar,
-}: {
-  tumKitaplar: Kitap[];
-  favoriler: number[];
-  onFavoriCikar: (id: number) => void;
-}) {
-  const favoriKitaplar = tumKitaplar.filter((k) => favoriler.includes(k.id));
+      {isError && <p style={{ color: "red" }}>Bir hata oluştu!</p>}
 
-  return (
-    <div className="favori-paneli">
-      <h2>Favoriler ({favoriKitaplar.length})</h2>
-      {favoriKitaplar.length === 0 ? (
-        <p style={{ color: "#777", fontSize: "14px" }}>Henüz favori eklenmedi.</p>
+      {isLoading ? (
+        <p>Yükleniyor...</p>
       ) : (
         <ul>
-          {favoriKitaplar.map((kitap) => (
-            <li key={kitap.id} className="favori-eleman">
-              <span>• {kitap.baslik}</span>
-              <button
-                className="btn-kaldir"
-                onClick={() => onFavoriCikar(kitap.id)}
+          {arananYazilar.map((yazi) => (
+            <li key={yazi.id} style={{ marginBottom: "10px" }}>
+              {/* Dinamik Detay Sayfasına Link (Slayt 125) */}
+              <Link
+                to={`/yazi/${yazi.id}`}
+                style={{ color: "#38bdf8", fontWeight: "bold" }}
               >
-                Kaldır
-              </button>
+                {yazi.baslik}
+              </Link>{" "}
+              - <span>{yazi.yazar}</span> (Puan: {yazi.puan}){" "}
+              <button onClick={() => handleRemovePost(yazi)}>Sil</button>
             </li>
           ))}
         </ul>
@@ -153,83 +65,85 @@ function FavoriPaneli({
   );
 }
 
-// 7. Ana Kök Bileşen (App)
-function App() {
-  // State 1: Arama metni (localStorage ile hatırlar)
-  const [aramaMetni, setAramaMetni] = useState<string>(() => {
-    return localStorage.getItem("kitap_arama") || "";
-  });
+// 2. Dinamik Detay Sayfası (Slayt 125-126)
+function YaziDetay() {
+  // Slayt 126: useParams hook'u ile URL'deki :id parametresini çekiyoruz
+  const { id } = useParams<{ id: string }>();
+  const yazilar = useSelector((state: RootState) => state.data);
 
-  // State 2: Seçilen Kategori
-  const [kategori, setKategori] = useState<string>("Tümü");
+  // Redux store'dan bu id'ye sahip yazıyı buluyoruz
+  const secilenYazi = yazilar.find((y) => y.id === Number(id));
 
-  // State 3: Favoriler listesi (ID dizisi, localStorage ile hatırlar)
-  const [favoriler, setFavoriler] = useState<number[]>(() => {
-    const kayitliFavoriler = localStorage.getItem("kitap_favoriler");
-    return kayitliFavoriler ? JSON.parse(kayitliFavoriler) : [];
-  });
-
-  // useEffect 1: Arama metni değiştikçe kaydet
-  useEffect(() => {
-    localStorage.setItem("kitap_arama", aramaMetni);
-  }, [aramaMetni]);
-
-  // useEffect 2: Favoriler değiştikçe kaydet
-  useEffect(() => {
-    localStorage.setItem("kitap_favoriler", JSON.stringify(favoriler));
-  }, [favoriler]);
-
-  // Favori Ekle / Çıkar fonksiyonu
-  const handleFavoriToggle = (id: number) => {
-    if (favoriler.includes(id)) {
-      setFavoriler(favoriler.filter((favId) => favId !== id));
-    } else {
-      setFavoriler([...favoriler, id]);
-    }
-  };
-
-  // Filtreleme Mantığı (Hem başlık hem yazar hem kategoriye göre)
-  const filtrelenmisKitaplar = baslangicKitaplar.filter((kitap) => {
-    const aramaUygun =
-      kitap.baslik.toLowerCase().includes(aramaMetni.toLowerCase()) ||
-      kitap.yazar.toLowerCase().includes(aramaMetni.toLowerCase());
-
-    const kategoriUygun =
-      kategori === "Tümü" || kitap.kategori === kategori;
-
-    return aramaUygun && kategoriUygun;
-  });
+  if (!secilenYazi) {
+    return (
+      <div>
+        <p style={{ color: "#ef4444" }}>Yazı bulunamadı!</p>
+        <Link to="/" style={{ color: "#38bdf8" }}>← Listeye Dön</Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="container">
-      <h1>Mini Kitaplık</h1>
-
-      {/* Arama ve Filtreleme Kontrolleri */}
-      <div className="filtre-alani">
-        <AramaCubugu
-          aramaMetni={aramaMetni}
-          onArama={(e) => setAramaMetni(e.target.value)}
-        />
-        <KategoriFiltre
-          kategori={kategori}
-          onKategoriDegis={(e) => setKategori(e.target.value)}
-        />
-      </div>
-
-      {/* Ana Çift Sütunlu Görünüm */}
-      <div className="ana-duzen">
-        <KitapListe
-          kitaplar={filtrelenmisKitaplar}
-          favoriler={favoriler}
-          onFavoriToggle={handleFavoriToggle}
-        />
-        <FavoriPaneli
-          tumKitaplar={baslangicKitaplar}
-          favoriler={favoriler}
-          onFavoriCikar={handleFavoriToggle}
-        />
-      </div>
+    <div style={{ backgroundColor: "#262626", padding: "20px", borderRadius: "8px" }}>
+      <h2>{secilenYazi.baslik}</h2>
+      <p><b>Yazar:</b> {secilenYazi.yazar}</p>
+      <p><b>Puan:</b> {secilenYazi.puan}</p>
+      <p><b>Yorum Sayısı:</b> {secilenYazi.yorum_sayisi}</p>
+      <p>
+        <a href={secilenYazi.url} target="_blank" rel="noreferrer" style={{ color: "#38bdf8" }}>
+          Resmi Kaynağa Git
+        </a>
+      </p>
+      <hr />
+      <Link to="/" style={{ color: "#38bdf8" }}>← Ana Sayfaya Dön</Link>
     </div>
+  );
+}
+
+// 3. Hakkında Sayfası
+function Hakkinda() {
+  return (
+    <div>
+      <h2>Hakkımızda</h2>
+      <p>Bu proje SDÜ Bilgisayar Mühendisliği Web Teknolojileri ve Programlama dersi için hazırlanmıştır.</p>
+    </div>
+  );
+}
+
+// 4. 404 Sayfa Bulunamadı Bileşeni (Slayt 128)
+function SayfaBulunamadi() {
+  return (
+    <div>
+      <h2 style={{ color: "#ef4444" }}>404 - Sayfa Bulunamadı</h2>
+      <p>Aradığınız sayfa mevcut değil.</p>
+      <Link to="/" style={{ color: "#38bdf8" }}>Ana Sayfaya Dön</Link>
+    </div>
+  );
+}
+
+// Ana Uygulama ve Rotalar
+function App() {
+  return (
+    <Router>
+      <div style={{ padding: "20px" }}>
+        <h1>React & Redux & Router Projesi</h1>
+
+        <nav style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
+          <Link to="/" style={{ color: "#38bdf8" }}>Ana Sayfa</Link>
+          <Link to="/hakkinda" style={{ color: "#38bdf8" }}>Hakkında</Link>
+        </nav>
+        <hr />
+
+        <Routes>
+          <Route path="/" element={<AnaSayfa />} />
+          <Route path="/hakkinda" element={<Hakkinda />} />
+          {/* Slayt 125-126: Dinamik Rota */}
+          <Route path="/yazi/:id" element={<YaziDetay />} />
+          {/* Slayt 128: Tanımlı olmayan tüm rotalar için 404 sayfası */}
+          <Route path="*" element={<SayfaBulunamadi />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
